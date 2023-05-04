@@ -33,7 +33,7 @@ func TestGetJokeResponseErrorHTTP(t *testing.T) {
 			return nil, want
 		},
 	}
-	g := NewJokeGateway(s, BaseJokeURL)
+	g := NewJokeGateway(s, "http://joke.loc8u.com:8888/joke")
 	joke, got := g.GetRandomJoke("Rob", "Pike")
 	assert.Nil(t, joke)
 	assert.ErrorContains(t, got, want.Error())

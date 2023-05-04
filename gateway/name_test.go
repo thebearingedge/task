@@ -33,7 +33,7 @@ func TestGetNameResponseErrorHTTP(t *testing.T) {
 			return nil, want
 		},
 	}
-	g := NewNameGateway(s, BaseNameURL)
+	g := NewNameGateway(s, "https://names.mcquay.me/api/v0/")
 	name, got := g.GetRandomName()
 	assert.Nil(t, name)
 	assert.ErrorContains(t, got, want.Error())

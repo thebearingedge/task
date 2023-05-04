@@ -10,8 +10,6 @@ import (
 	"github.com/thebearingedge/task/model"
 )
 
-var BaseJokeURL string = "http://joke.loc8u.com:8888/joke"
-
 type jokeHttpClient interface {
 	Get(url string) (*http.Response, error)
 }

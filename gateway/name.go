@@ -10,8 +10,6 @@ import (
 	"github.com/thebearingedge/task/model"
 )
 
-var BaseNameURL string = "https://names.mcquay.me/api/v0/"
-
 type nameHttpClient interface {
 	Get(url string) (*http.Response, error)
 }
