@@ -10,14 +10,18 @@ import (
 	"github.com/thebearingedge/task/model"
 )
 
-var BaseNameURL string = "http://joke.loc8u.com:8888/joke"
+var BaseJokeURL string = "http://joke.loc8u.com:8888/joke"
+
+type jokeHttpClient interface {
+	Get(url string) (*http.Response, error)
+}
 
 type JokeGateway struct {
-	client *http.Client
+	client jokeHttpClient
 	uri    string
 }
 
-func NewJokeGateway(client *http.Client, uri string) JokeGateway {
+func NewJokeGateway(client jokeHttpClient, uri string) JokeGateway {
 	if _, err := url.ParseRequestURI(uri); err != nil {
 		panic(err)
 	}

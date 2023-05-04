@@ -9,14 +9,17 @@ import (
 	"github.com/thebearingedge/task/model"
 )
 
-var NameURL string = "https://names.mcquay.me/api/v0/"
+var BaseNameURL string = "https://names.mcquay.me/api/v0/"
 
+type nameHttpClient interface {
+	Get(url string) (*http.Response, error)
+}
 type NameGateway struct {
-	client *http.Client
+	client nameHttpClient
 	uri    string
 }
 
-func NewNameGateway(client *http.Client, uri string) NameGateway {
+func NewNameGateway(client nameHttpClient, uri string) NameGateway {
 	if _, err := url.ParseRequestURI(uri); err != nil {
 		panic(err)
 	}

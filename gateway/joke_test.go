@@ -12,23 +12,54 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var jokeFixtureBytes, _ = ioutil.ReadFile("../fixture/joke.json")
+type StubJokesHttpClient struct {
+	stub func(url string) (*http.Response, error)
+}
 
-func TestSuccessfulGetJokeResponse(t *testing.T) {
+func (j StubJokesHttpClient) Get(url string) (*http.Response, error) {
+	return j.stub(url)
+}
+
+func TestGetJokeResponseErrorHTTP(t *testing.T) {
+	want := assert.AnError
+	s := StubJokesHttpClient{
+		stub: func(url string) (*http.Response, error) {
+			return nil, want
+		},
+	}
+	g := NewJokeGateway(s, BaseJokeURL)
+	joke, got := g.GetRandomJoke("Rob", "Pike")
+	assert.Nil(t, joke)
+	assert.Equal(t, want, got)
+}
+
+func TestGetJokeResponseErrorUnmarshal(t *testing.T) {
+	want := json.SyntaxError{}
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintln(w, strings.TrimSpace(string(jokeFixtureBytes)))
 	}))
 	defer s.Close()
 	g := NewJokeGateway(s.Client(), s.URL)
-	name, err := g.GetRandomJoke("Rob", "Pike")
+	joke, got := g.GetRandomJoke("Rob", "Pike")
+	assert.Nil(t, joke)
+	assert.ErrorContains(t, got, want.Error())
+}
+
+func TestGetJokeResponseSuccess(t *testing.T) {
+	jokeFixtureBytes, err := ioutil.ReadFile("../fixture/joke.json")
 	assert.Nil(t, err)
-	nameResponseBytes, err := json.Marshal(name)
+	want := strings.TrimSpace(string(jokeFixtureBytes))
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintln(w, want)
+	}))
+	defer s.Close()
+	g := NewJokeGateway(s.Client(), s.URL)
+	joke, err := g.GetRandomJoke("Rob", "Pike")
 	assert.Nil(t, err)
-	assert.Equal(
-		t,
-		strings.TrimSpace(string(jokeFixtureBytes)),
-		strings.TrimSpace(string(nameResponseBytes)),
-	)
+	jokeResponseBytes, err := json.Marshal(joke)
+	assert.Nil(t, err)
+	got := strings.TrimSpace(string(jokeResponseBytes))
+	assert.Equal(t, want, got)
 }

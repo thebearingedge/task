@@ -12,13 +12,47 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var nameFixtureBytes, _ = ioutil.ReadFile("../fixture/name.json")
+type StubNamesHttpClient struct {
+	stub func(url string) (*http.Response, error)
+}
 
-func TestSuccessfulGetNameResponse(t *testing.T) {
+func (j StubNamesHttpClient) Get(url string) (*http.Response, error) {
+	return j.stub(url)
+}
+
+func TestGetNameResponseErrorHTTP(t *testing.T) {
+	want := assert.AnError
+	s := StubNamesHttpClient{
+		stub: func(url string) (*http.Response, error) {
+			return nil, want
+		},
+	}
+	g := NewNameGateway(s, BaseNameURL)
+	name, got := g.GetRandomName()
+	assert.Nil(t, name)
+	assert.Equal(t, want, got)
+}
+
+func TestGetNameResponseErrorUnmarshal(t *testing.T) {
+	want := json.SyntaxError{}
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer s.Close()
+	g := NewNameGateway(s.Client(), s.URL)
+	name, got := g.GetRandomName()
+	assert.Nil(t, name)
+	assert.ErrorContains(t, got, want.Error())
+}
+
+func TestGetNameResponseSuccess(t *testing.T) {
+	nameFixtureBytes, err := ioutil.ReadFile("../fixture/name.json")
+	assert.Nil(t, err)
+	want := strings.TrimSpace(string(nameFixtureBytes))
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintln(w, strings.TrimSpace(string(nameFixtureBytes)))
+		fmt.Fprintln(w, want)
 	}))
 	defer s.Close()
 	g := NewNameGateway(s.Client(), s.URL)
@@ -26,9 +60,6 @@ func TestSuccessfulGetNameResponse(t *testing.T) {
 	assert.Nil(t, err)
 	nameResponseBytes, err := json.Marshal(name)
 	assert.Nil(t, err)
-	assert.Equal(
-		t,
-		strings.TrimSpace(string(nameFixtureBytes)),
-		strings.TrimSpace(string(nameResponseBytes)),
-	)
+	got := strings.TrimSpace(string(nameResponseBytes))
+	assert.Equal(t, want, got)
 }
