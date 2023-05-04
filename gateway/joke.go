@@ -33,12 +33,12 @@ func (g JokeGateway) GetRandomJoke(firstName string, lastName string) (*model.Jo
 	url := fmt.Sprintf("%s?limitTo=nerdy&firstName=%s&lastName=%s", g.uri, firstName, lastName)
 	res, err := g.client.Get(url)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("send request to %v for joke: %w", g.uri, err)
 	}
 	defer res.Body.Close()
 	data, err := io.ReadAll(res.Body)
 	if err := json.Unmarshal(data, &joke); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unmarshal joke response data: - %w", err)
 	}
 	return &joke, nil
 }

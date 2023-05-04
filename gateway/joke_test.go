@@ -30,7 +30,7 @@ func TestGetJokeResponseErrorHTTP(t *testing.T) {
 	g := NewJokeGateway(s, BaseJokeURL)
 	joke, got := g.GetRandomJoke("Rob", "Pike")
 	assert.Nil(t, joke)
-	assert.Equal(t, want, got)
+	assert.ErrorContains(t, got, want.Error())
 }
 
 func TestGetJokeResponseErrorUnmarshal(t *testing.T) {

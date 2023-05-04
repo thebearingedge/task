@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -30,12 +31,12 @@ func (g NameGateway) GetRandomName() (*model.NameResponse, error) {
 	var name model.NameResponse
 	res, err := g.client.Get(g.uri)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("send request to %v for name: %w", g.uri, err)
 	}
 	defer res.Body.Close()
 	data, err := io.ReadAll(res.Body)
 	if err := json.Unmarshal(data, &name); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unmarshal name response data: - %w", err)
 	}
 	return &name, nil
 }

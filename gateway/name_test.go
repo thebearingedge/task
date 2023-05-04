@@ -30,7 +30,7 @@ func TestGetNameResponseErrorHTTP(t *testing.T) {
 	g := NewNameGateway(s, BaseNameURL)
 	name, got := g.GetRandomName()
 	assert.Nil(t, name)
-	assert.Equal(t, want, got)
+	assert.ErrorContains(t, got, want.Error())
 }
 
 func TestGetNameResponseErrorUnmarshal(t *testing.T) {
