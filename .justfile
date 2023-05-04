@@ -19,3 +19,6 @@ run:
 
 build:
   go build -o ./.bin/task
+
+build_image:
+  docker build --tag thebearingedge/task .

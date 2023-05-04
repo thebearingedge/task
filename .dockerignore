@@ -1,0 +1,9 @@
+*
+!application
+!gateway
+!log
+!model
+!server
+!main.go
+!go.mod
+!go.sum
