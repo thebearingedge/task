@@ -6,10 +6,17 @@ import (
 )
 
 type App interface {
-	FetchRandomNameJoke() (application.ApplicationResult, error)
+	FetchRandomNameJoke() (*application.ApplicationResult, error)
 }
 
-func NewServer(app App) *gin.Engine {
+type Logger interface {
+	Err(error)
+	Info(args ...any)
+}
+
+func NewServer(app App, log Logger) *gin.Engine {
 	s := gin.New()
+	v1 := s.Group("/v1")
+	v1.GET("/random-joke", HandleGetRandomJoke(app, log))
 	return s
 }
