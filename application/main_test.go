@@ -58,20 +58,7 @@ func TestApplicationHandlesFailedJokeRequests(t *testing.T) {
 }
 
 func TestApplicationFetchesCustomJoke(t *testing.T) {
-	want := &ApplicationResult{
-		&model.JokeResponse{
-			Type: "success",
-			Value: struct {
-				Categories []string "json:\"categories\""
-				ID         int      "json:\"id\""
-				Joke       string   "json:\"joke\""
-			}{
-				Categories: []string{"nerdy"},
-				ID:         42,
-				Joke:       "Rob Pike worked on Go.",
-			},
-		},
-	}
+	want := "Rob Pike worked on Go."
 	names := StubNameFetcher{
 		stub: func() (*model.NameResponse, error) {
 			return &model.NameResponse{FirstName: "Rob", LastName: "Pike"}, nil

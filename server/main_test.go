@@ -1,14 +1,12 @@
 package server
 
 import (
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"github.com/thebearingedge/task/application"
 )
 
 func init() {
@@ -16,10 +14,10 @@ func init() {
 }
 
 type StubApp struct {
-	stub func() (*application.ApplicationResult, error)
+	stub func() (string, error)
 }
 
-func (a StubApp) FetchRandomNameJoke() (*application.ApplicationResult, error) {
+func (a StubApp) FetchRandomNameJoke() (string, error) {
 	return a.stub()
 }
 
@@ -36,8 +34,8 @@ func (l *StubLogger) Err(err error) {
 func TestServerResponseWithApplicationResultFail(t *testing.T) {
 	want := assert.AnError
 	a := StubApp{
-		stub: func() (*application.ApplicationResult, error) {
-			return nil, want
+		stub: func() (string, error) {
+			return "", want
 		},
 	}
 	l := StubLogger{}
@@ -53,10 +51,15 @@ func TestServerResponseWithApplicationResultFail(t *testing.T) {
 }
 
 func TestServerResponseWithApplicationResultSuccess(t *testing.T) {
-	want := application.ApplicationResult{}
+	want := `
+		There are two hard things in distributed systems:
+		2. exactly-once delivery
+		1. in-order delivery
+		2. exactly-once delivery
+	`
 	a := StubApp{
-		stub: func() (*application.ApplicationResult, error) {
-			return &want, nil
+		stub: func() (string, error) {
+			return want, nil
 		},
 	}
 	l := StubLogger{}
@@ -66,7 +69,6 @@ func TestServerResponseWithApplicationResultSuccess(t *testing.T) {
 	assert.Nil(t, err)
 	s.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
-	var got application.ApplicationResult
-	json.Unmarshal(w.Body.Bytes(), &got)
+	got := w.Body.String()
 	assert.Equal(t, want, got)
 }

@@ -6,16 +6,13 @@ A random name/joke API in Go.
 
 ### `/v1/random-joke`
 
-Retrieves a random `firstName` and `lastName` from `NAMES_SERVICE_BASE_URL` and feeds them into a request to `JOKES_SERVICE_BASE_URL`. The endpoint's response body is the final joke, using the `firstName` and `lastName`.
+Retrieves a random `firstName` and `lastName` from `NAMES_SERVICE_BASE_URL` and feeds them into a request to `JOKES_SERVICE_BASE_URL`. The endpoint's response body is the text of the resulting joke, using the `firstName` and `lastName`.
 
 #### Example
 
-```
-GET ${NAMES_SERVICE_BASE_URL}
--> {"first_name”:"Hasina”,"last_name”:"Tanweer"}
-
-GET ${JOKES_SERVICE_BASE_URL}?firstName=Hasina&lastName=Tanweer
--> { “type”: “success”, “value”: { “id”: 181, “joke”: Hasina Tanweer’s OSI network model has only one layer - Physical.“, “categories”: [“nerdy”] } }
+```shell
+## GET /v1/random-joke
+## Hasina Tanweer’s OSI network model has only one layer - Physical.
 ```
 
 ## Environment Variables
@@ -23,8 +20,7 @@ GET ${JOKES_SERVICE_BASE_URL}?firstName=Hasina&lastName=Tanweer
 See `.env.example`. Make a copy to use them in `make` recipes.
 
 ```shell
-cp .env.example .env
-cat .env
+cat .env.example
 
 # #!/bin/sh
 #
@@ -45,7 +41,7 @@ The remote address of the random name API.
 
 #### `JOKES_SERVICE_BASE_URL`
 
-The remote address of the random joke API.
+The remote address of the random joke API. The `firstName` and `lastName` received from `NAMES_SERVICE_BASE_URL` will be added as query string parameters at runtime.
 
 ## Development
 
@@ -77,7 +73,7 @@ Build a container image tagged as `thebearingedge/task` with **`make image`**. *
 
 ```shell
 curl localhost:8080/v1/random-joke
-# {"type":"success","value":{"categories":["nerdy"],"id":1683221491,"joke":"Boubeker Kunst can dereference NULL."}}
+# Boubeker Kunst can dereference NULL.
 ```
 
 ## Room for Improvement

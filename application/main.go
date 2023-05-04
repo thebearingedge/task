@@ -12,10 +12,6 @@ type JokeFetcher interface {
 	GetRandomJoke(firstName string, lastName string) (*model.JokeResponse, error)
 }
 
-type ApplicationResult struct {
-	*model.JokeResponse
-}
-
 type Application struct {
 	names NameFetcher
 	jokes JokeFetcher
@@ -25,14 +21,14 @@ func NewApplication(names NameFetcher, jokes JokeFetcher) Application {
 	return Application{names, jokes}
 }
 
-func (a Application) FetchRandomNameJoke() (*ApplicationResult, error) {
+func (a Application) FetchRandomNameJoke() (string, error) {
 	name, nameErr := a.names.GetRandomName()
 	if nameErr != nil {
-		return nil, nameErr
+		return "", nameErr
 	}
 	joke, jokeErr := a.jokes.GetRandomJoke(name.FirstName, name.LastName)
 	if jokeErr != nil {
-		return nil, jokeErr
+		return "", jokeErr
 	}
-	return &ApplicationResult{joke}, nil
+	return joke.Value.Joke, nil
 }

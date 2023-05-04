@@ -14,6 +14,6 @@ func HandleGetRandomJoke(app App, log Logger) func(c *gin.Context) {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		c.JSON(http.StatusOK, result)
+		c.String(http.StatusOK, result)
 	}
 }
