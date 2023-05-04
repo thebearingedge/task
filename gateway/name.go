@@ -26,14 +26,20 @@ func NewNameGateway(client nameHttpClient, uri string) nameGateway {
 	return nameGateway{client, uri}
 }
 
+// TODO - returning a pointer may not be desirable
+// however, representing absence without nil relies on meaningful errors
+// and i'm not sure returning a "zero-value" struct is actually a good idea
 func (g nameGateway) GetRandomName() (*model.NameResponse, error) {
-	var name model.NameResponse
 	res, err := g.client.Get(g.uri)
+	// TODO - the http Client does not return an error
+	// for 4xx and 5xx responses
+	// there should be test cases for this failure mode
 	if err != nil {
 		return nil, fmt.Errorf("send request to %v for name: %w", g.uri, err)
 	}
 	defer res.Body.Close()
 	data, err := io.ReadAll(res.Body)
+	var name model.NameResponse
 	if err := json.Unmarshal(data, &name); err != nil {
 		return nil, fmt.Errorf("unmarshal name response data: - %w", err)
 	}

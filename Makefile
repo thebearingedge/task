@@ -20,6 +20,9 @@ cover:
 run:
 	go run main.go
 
+watch:
+	gow -c run main.go
+
 build:
 	go build -o ./.bin/task
 

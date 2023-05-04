@@ -5,6 +5,9 @@ import (
 	"os"
 )
 
+// TODO - This logger may not be necessary
+// logging in gin: https://gin-gonic.com/docs/examples/custom-log-format/
+// custom middleware: https://gin-gonic.com/docs/examples/custom-middleware/
 type Logger struct{}
 
 func NewLogger() Logger {
