@@ -15,19 +15,20 @@ var BaseNameURL string = "https://names.mcquay.me/api/v0/"
 type nameHttpClient interface {
 	Get(url string) (*http.Response, error)
 }
-type NameGateway struct {
+
+type nameGateway struct {
 	client nameHttpClient
 	uri    string
 }
 
-func NewNameGateway(client nameHttpClient, uri string) NameGateway {
+func NewNameGateway(client nameHttpClient, uri string) nameGateway {
 	if _, err := url.ParseRequestURI(uri); err != nil {
 		panic(err)
 	}
-	return NameGateway{client, uri}
+	return nameGateway{client, uri}
 }
 
-func (g NameGateway) GetRandomName() (*model.NameResponse, error) {
+func (g nameGateway) GetRandomName() (*model.NameResponse, error) {
 	var name model.NameResponse
 	res, err := g.client.Get(g.uri)
 	if err != nil {

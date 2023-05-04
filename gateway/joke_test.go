@@ -20,6 +20,12 @@ func (j StubJokesHttpClient) Get(url string) (*http.Response, error) {
 	return j.stub(url)
 }
 
+func TestCannotMakeJokesGatewayWithInvalidURI(t *testing.T) {
+	assert.Panics(t, func() {
+		NewJokeGateway(http.DefaultClient, "nope")
+	})
+}
+
 func TestGetJokeResponseErrorHTTP(t *testing.T) {
 	want := assert.AnError
 	s := StubJokesHttpClient{

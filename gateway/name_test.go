@@ -20,6 +20,12 @@ func (j StubNamesHttpClient) Get(url string) (*http.Response, error) {
 	return j.stub(url)
 }
 
+func TestCannotMakeNamesGatewayWithInvalidURI(t *testing.T) {
+	assert.Panics(t, func() {
+		NewNameGateway(http.DefaultClient, "nope")
+	})
+}
+
 func TestGetNameResponseErrorHTTP(t *testing.T) {
 	want := assert.AnError
 	s := StubNamesHttpClient{

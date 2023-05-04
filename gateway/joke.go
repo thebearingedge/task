@@ -16,19 +16,19 @@ type jokeHttpClient interface {
 	Get(url string) (*http.Response, error)
 }
 
-type JokeGateway struct {
+type jokeGateway struct {
 	client jokeHttpClient
 	uri    string
 }
 
-func NewJokeGateway(client jokeHttpClient, uri string) JokeGateway {
+func NewJokeGateway(client jokeHttpClient, uri string) jokeGateway {
 	if _, err := url.ParseRequestURI(uri); err != nil {
 		panic(err)
 	}
-	return JokeGateway{client, uri}
+	return jokeGateway{client, uri}
 }
 
-func (g JokeGateway) GetRandomJoke(firstName string, lastName string) (*model.JokeResponse, error) {
+func (g jokeGateway) GetRandomJoke(firstName string, lastName string) (*model.JokeResponse, error) {
 	var joke model.JokeResponse
 	url := fmt.Sprintf("%s?limitTo=nerdy&firstName=%s&lastName=%s", g.uri, firstName, lastName)
 	res, err := g.client.Get(url)
