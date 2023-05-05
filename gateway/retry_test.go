@@ -1,4 +1,4 @@
-package breaker
+package gateway
 
 import (
 	"errors"
@@ -9,8 +9,8 @@ import (
 
 func TestRetryStrategyAbortsOnError(t *testing.T) {
 	want := errors.New("max retries exceeded")
-	op := func() error {
-		return assert.AnError
+	op := func() (any, error) {
+		return nil, assert.AnError
 	}
 	strat := func(retry int, err error) error {
 		assert.ErrorIs(t, err, assert.AnError)
@@ -19,36 +19,40 @@ func TestRetryStrategyAbortsOnError(t *testing.T) {
 		}
 		return nil
 	}
-	got := Retry(op, strat)
+	_, got := Retry(op, strat)
 	assert.ErrorIs(t, got, want)
 	assert.ErrorIs(t, got, assert.AnError)
 }
 
 func TestRetryStrategyIsSkippedOnSuccess(t *testing.T) {
-	op := func() error {
-		return nil
+	want := 42
+	op := func() (int, error) {
+		return want, nil
 	}
 	strat := func(retry int, err error) error {
 		assert.FailNow(t, "retry strategy should not be called")
 		return nil
 	}
-	err := Retry(op, strat)
+	got, err := Retry(op, strat)
 	assert.Nil(t, err)
+	assert.Equal(t, want, got)
 }
 
 func TestRetryOperationUntilSucceeded(t *testing.T) {
 	try := 0
-	op := func() error {
+	var want int
+	op := func() (int, error) {
 		if try == 3 {
-			return nil
+			return want, nil
 		}
 		try += 1
-		return assert.AnError
+		return want, assert.AnError
 	}
 	strat := func(retry int, err error) error {
 		assert.LessOrEqual(t, retry, 3)
 		return nil
 	}
-	err := Retry(op, strat)
+	got, err := Retry(op, strat)
 	assert.Nil(t, err)
+	assert.Equal(t, want, got)
 }
