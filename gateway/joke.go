@@ -39,13 +39,13 @@ func (g jokeGateway) GetRandomJoke(firstName string, lastName string) (*model.Jo
 	// for 4xx and 5xx responses
 	// there should be test cases for this failure mode
 	if err != nil {
-		return nil, fmt.Errorf("send request to %v for joke: %w", g.uri, err)
+		return nil, httpErrorf("send request to %v for joke: %w", g.uri, err)
 	}
 	defer res.Body.Close()
 	data, err := io.ReadAll(res.Body)
 	var joke model.JokeResponse
 	if err := json.Unmarshal(data, &joke); err != nil {
-		return nil, fmt.Errorf("unmarshal joke response data: - %w", err)
+		return nil, deserializationErrorf("unmarshal joke response data: - %w", err)
 	}
 	return &joke, nil
 }
