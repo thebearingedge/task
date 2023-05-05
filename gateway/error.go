@@ -4,52 +4,52 @@ import (
 	"fmt"
 )
 
-type GatewayErrorKind int
+type gatewayErrorKind int
 
 const (
-	httpError GatewayErrorKind = iota
+	httpError gatewayErrorKind = iota
 	clientError
 	serverError
 	deserializationError
 )
 
-type GatewayError struct {
+type gatewayError struct {
+	kind gatewayErrorKind
 	err  error
-	kind GatewayErrorKind
 }
 
-func (e GatewayError) Error() string {
+func (e gatewayError) Error() string {
 	return e.err.Error()
 }
 
-func (e GatewayError) Unwrap() error {
+func (e gatewayError) Unwrap() error {
 	return e.err
 }
 
-func httpErrorf(format string, args ...any) GatewayError {
-	return GatewayError{
-		fmt.Errorf(format, args...),
+func httpErrorf(format string, args ...any) gatewayError {
+	return gatewayError{
 		httpError,
+		fmt.Errorf(format, args...),
 	}
 }
 
-func clientErrorf(format string, args ...any) GatewayError {
-	return GatewayError{
-		fmt.Errorf(format, args...),
+func clientErrorf(format string, args ...any) gatewayError {
+	return gatewayError{
 		clientError,
+		fmt.Errorf(format, args...),
 	}
 }
 
-func serverErrorf(format string, args ...any) GatewayError {
-	return GatewayError{
-		fmt.Errorf(format, args...),
+func serverErrorf(format string, args ...any) gatewayError {
+	return gatewayError{
 		serverError,
+		fmt.Errorf(format, args...),
 	}
 }
 
-func deserializationErrorf(format string, args ...any) GatewayError {
-	return GatewayError{
-		fmt.Errorf(format, args...),
+func deserializationErrorf(format string, args ...any) gatewayError {
+	return gatewayError{
 		deserializationError,
+		fmt.Errorf(format, args...),
 	}
 }

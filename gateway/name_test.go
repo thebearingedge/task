@@ -26,7 +26,7 @@ func TestCannotMakeNamesGatewayWithInvalidURI(t *testing.T) {
 	})
 }
 
-func TestGetNameResponseErrorHTTP(t *testing.T) {
+func TestGetNameHttpError(t *testing.T) {
 	want := assert.AnError
 	s := StubNamesHttpClient{
 		stub: func(url string) (*http.Response, error) {
@@ -39,7 +39,33 @@ func TestGetNameResponseErrorHTTP(t *testing.T) {
 	assert.ErrorIs(t, got, want)
 }
 
-func TestGetNameResponseErrorUnmarshal(t *testing.T) {
+func TestGetNameClientError(t *testing.T) {
+	var want gatewayError
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+	}))
+	defer s.Close()
+	g := NewNameGateway(s.Client(), s.URL)
+	name, err := g.GetRandomName()
+	assert.Nil(t, name)
+	assert.ErrorAs(t, err, &want)
+	assert.ErrorContains(t, err, "client error")
+}
+
+func TestGetNameServerError(t *testing.T) {
+	var want gatewayError
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+	}))
+	defer s.Close()
+	g := NewNameGateway(s.Client(), s.URL)
+	name, err := g.GetRandomName()
+	assert.Nil(t, name)
+	assert.ErrorAs(t, err, &want)
+	assert.ErrorContains(t, err, "server error")
+}
+
+func TestGetNameUnmarshalError(t *testing.T) {
 	var want *json.SyntaxError
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -51,7 +77,7 @@ func TestGetNameResponseErrorUnmarshal(t *testing.T) {
 	assert.ErrorAs(t, got, &want)
 }
 
-func TestGetNameResponseSuccess(t *testing.T) {
+func TestGetNameSuccess(t *testing.T) {
 	nameFixtureBytes, err := ioutil.ReadFile("../fixture/name.json")
 	assert.Nil(t, err)
 	want := strings.TrimSpace(string(nameFixtureBytes))

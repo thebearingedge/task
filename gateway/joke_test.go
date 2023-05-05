@@ -26,7 +26,7 @@ func TestCannotMakeJokesGatewayWithInvalidURI(t *testing.T) {
 	})
 }
 
-func TestGetJokeResponseErrorHTTP(t *testing.T) {
+func TestGetJokeHttpError(t *testing.T) {
 	want := assert.AnError
 	s := StubJokesHttpClient{
 		stub: func(url string) (*http.Response, error) {
@@ -39,7 +39,33 @@ func TestGetJokeResponseErrorHTTP(t *testing.T) {
 	assert.ErrorIs(t, got, want)
 }
 
-func TestGetJokeResponseErrorUnmarshal(t *testing.T) {
+func TestGetJokeClientError(t *testing.T) {
+	var want gatewayError
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+	}))
+	defer s.Close()
+	g := NewJokeGateway(s.Client(), s.URL)
+	joke, err := g.GetRandomJoke("Rob", "Pike")
+	assert.Nil(t, joke)
+	assert.ErrorAs(t, err, &want)
+	assert.ErrorContains(t, err, "client error")
+}
+
+func TestGetJokeServerError(t *testing.T) {
+	var want gatewayError
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+	}))
+	defer s.Close()
+	g := NewJokeGateway(s.Client(), s.URL)
+	joke, err := g.GetRandomJoke("Rob", "Pike")
+	assert.Nil(t, joke)
+	assert.ErrorAs(t, err, &want)
+	assert.ErrorContains(t, err, "server error")
+}
+
+func TestGetJokeUnmarshalError(t *testing.T) {
 	var want *json.SyntaxError
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)

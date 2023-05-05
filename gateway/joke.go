@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -26,20 +27,30 @@ func NewJokeGateway(client jokeHttpClient, uri string) jokeGateway {
 	return jokeGateway{client, uri}
 }
 
-// TODO - returning a pointer may not be desirable
-// however, representing absence without nil relies on meaningful errors
-// and i'm not sure returning a "zero-value" struct is actually a good idea
 func (g jokeGateway) GetRandomJoke(firstName string, lastName string) (*model.JokeResponse, error) {
 	query := url.Values{}
 	query.Set("firstName", firstName)
 	query.Set("lastName", lastName)
 	url := fmt.Sprintf("%v?%v", g.uri, query.Encode())
 	res, err := g.client.Get(url)
-	// TODO - the http Client does not return an error
-	// for 4xx and 5xx responses
-	// there should be test cases for this failure mode
 	if err != nil {
-		return nil, httpErrorf("send request to %v for joke: %w", g.uri, err)
+		return nil, httpErrorf("malformed request to %v for joke: %w", g.uri, err)
+	}
+	if res.StatusCode >= 500 {
+		return nil, serverErrorf(
+			"got %v from %v: %w",
+			res.Status,
+			g.uri,
+			errors.New("server error"),
+		)
+	}
+	if res.StatusCode >= 400 {
+		return nil, clientErrorf(
+			"got %v from %v: %w",
+			res.Status,
+			g.uri,
+			errors.New("client error"),
+		)
 	}
 	defer res.Body.Close()
 	data, err := io.ReadAll(res.Body)
