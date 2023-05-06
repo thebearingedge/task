@@ -1,8 +1,6 @@
 package gateway
 
-import (
-	"errors"
-)
+import "errors"
 
 func Retry[T any](op func() (T, error), onErr func(tries int, err error) error) (T, error) {
 	var e error
