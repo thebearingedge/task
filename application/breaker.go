@@ -44,11 +44,11 @@ func (b *breaker) IsOpen() bool {
 func (b *breaker) Pass() {
 	b.Lock()
 	defer b.Unlock()
-	if b.state == closed {
+	if b.state == closed || b.state == open {
 		return
 	}
-	b.failures = min(0, b.failures-1)
-	if b.openThreshold-b.failures <= b.closeThreshold {
+	b.failures = max(0, b.failures-1)
+	if b.openThreshold-b.failures >= b.closeThreshold {
 		b.failures = 0
 		b.state = closed
 	}
@@ -77,19 +77,26 @@ func NewBreaker(c BreakerConfig) breaker {
 	}
 	halfOpenTryOneIn := c.HalfOpenTryOneIn
 	if halfOpenTryOneIn == 0 {
-		halfOpenTryOneIn = 10
+		halfOpenTryOneIn = c.OpenThreshold
 	}
 	return breaker{
 		state:            closed,
 		openThreshold:    c.OpenThreshold,
 		closeThreshold:   closeThreshold,
 		halfOpenAfter:    c.HalfOpenAfter,
-		halfOpenTryOneIn: c.HalfOpenTryOneIn,
+		halfOpenTryOneIn: halfOpenTryOneIn,
 	}
 }
 
 func min(x int, y int) int {
 	if x < y {
+		return x
+	}
+	return y
+}
+
+func max(x int, y int) int {
+	if x > y {
 		return x
 	}
 	return y
