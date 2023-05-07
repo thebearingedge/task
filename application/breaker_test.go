@@ -7,14 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCannotMakeBreakerWithInvalidHalfOpenAfter(t *testing.T) {
-	assert.Panics(t, func() {
-		NewBreaker(BreakerConfig{HalfOpenAfter: "lol"})
-	})
-}
-
 func TestBreakerOpensAtOpenThreshold(t *testing.T) {
-	c := BreakerConfig{OpenThreshold: 3, HalfOpenAfter: "1ms"}
+	c := BreakerConfig{OpenThreshold: 3, HalfOpenAfter: time.Millisecond}
 	b := NewBreaker(c)
 	assert.False(t, b.IsOpen())
 	b.Fail()
@@ -26,7 +20,7 @@ func TestBreakerOpensAtOpenThreshold(t *testing.T) {
 }
 
 func TestBreakerClosesAtCloseThreshold(t *testing.T) {
-	c := BreakerConfig{OpenThreshold: 3, HalfOpenAfter: "1ms"}
+	c := BreakerConfig{OpenThreshold: 3, HalfOpenAfter: time.Millisecond}
 	b := NewBreaker(c)
 	b.Fail()
 	b.Fail()
@@ -39,7 +33,7 @@ func TestBreakerClosesAtCloseThreshold(t *testing.T) {
 }
 
 func TestBreakerIsRegularlyClosedWhileHalfOpen(t *testing.T) {
-	c := BreakerConfig{OpenThreshold: 3, HalfOpenAfter: "1ms", HalfOpenTryOneIn: 3}
+	c := BreakerConfig{OpenThreshold: 3, HalfOpenAfter: time.Millisecond, HalfOpenTryOneIn: 3}
 	b := NewBreaker(c)
 	b.Fail()
 	b.Fail()

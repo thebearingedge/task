@@ -17,7 +17,7 @@ type BreakerConfig struct {
 	OpenThreshold    int
 	CloseThreshold   int
 	HalfOpenTryOneIn int
-	HalfOpenAfter    string
+	HalfOpenAfter    time.Duration
 }
 
 type breaker struct {
@@ -71,10 +71,6 @@ func (b *breaker) Fail() {
 }
 
 func NewBreaker(c BreakerConfig) breaker {
-	halfOpenAfter, err := time.ParseDuration(c.HalfOpenAfter)
-	if err != nil {
-		panic(err)
-	}
 	closeThreshold := c.CloseThreshold
 	if c.CloseThreshold == 0 {
 		closeThreshold = c.OpenThreshold
@@ -87,7 +83,7 @@ func NewBreaker(c BreakerConfig) breaker {
 		state:            closed,
 		openThreshold:    c.OpenThreshold,
 		closeThreshold:   closeThreshold,
-		halfOpenAfter:    halfOpenAfter,
+		halfOpenAfter:    c.HalfOpenAfter,
 		halfOpenTryOneIn: c.HalfOpenTryOneIn,
 	}
 }
