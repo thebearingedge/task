@@ -30,7 +30,10 @@ func NewJokeGateway(client jokeHttpClient, uri string) jokeGateway {
 // however, representing absence without nil relies on meaningful errors
 // and i'm not sure returning a "zero-value" struct is actually a good idea
 func (g jokeGateway) GetRandomJoke(firstName string, lastName string) (*model.JokeResponse, error) {
-	url := fmt.Sprintf("%s?limitTo=nerdy&firstName=%s&lastName=%s", g.uri, firstName, lastName)
+	query := url.Values{}
+	query.Set("firstName", firstName)
+	query.Set("lastName", lastName)
+	url := fmt.Sprintf("%v?%v", g.uri, query.Encode())
 	res, err := g.client.Get(url)
 	// TODO - the http Client does not return an error
 	// for 4xx and 5xx responses
