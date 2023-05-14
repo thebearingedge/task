@@ -36,11 +36,11 @@ func TestGetNameResponseErrorHTTP(t *testing.T) {
 	g := NewNameGateway(s, "https://names.mcquay.me/api/v0/")
 	name, got := g.GetRandomName()
 	assert.Nil(t, name)
-	assert.ErrorContains(t, got, want.Error())
+	assert.ErrorIs(t, got, want)
 }
 
 func TestGetNameResponseErrorUnmarshal(t *testing.T) {
-	want := json.SyntaxError{}
+	var want *json.SyntaxError
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
@@ -48,7 +48,7 @@ func TestGetNameResponseErrorUnmarshal(t *testing.T) {
 	g := NewNameGateway(s.Client(), s.URL)
 	name, got := g.GetRandomName()
 	assert.Nil(t, name)
-	assert.ErrorContains(t, got, want.Error())
+	assert.ErrorAs(t, got, &want)
 }
 
 func TestGetNameResponseSuccess(t *testing.T) {

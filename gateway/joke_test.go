@@ -36,11 +36,11 @@ func TestGetJokeResponseErrorHTTP(t *testing.T) {
 	g := NewJokeGateway(s, "http://joke.loc8u.com:8888/joke")
 	joke, got := g.GetRandomJoke("Rob", "Pike")
 	assert.Nil(t, joke)
-	assert.ErrorContains(t, got, want.Error())
+	assert.ErrorIs(t, got, want)
 }
 
 func TestGetJokeResponseErrorUnmarshal(t *testing.T) {
-	want := json.SyntaxError{}
+	var want *json.SyntaxError
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
@@ -48,7 +48,7 @@ func TestGetJokeResponseErrorUnmarshal(t *testing.T) {
 	g := NewJokeGateway(s.Client(), s.URL)
 	joke, got := g.GetRandomJoke("Rob", "Pike")
 	assert.Nil(t, joke)
-	assert.ErrorContains(t, got, want.Error())
+	assert.ErrorAs(t, got, &want)
 }
 
 func TestGetJokeResponseSuccess(t *testing.T) {
