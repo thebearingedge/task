@@ -45,6 +45,7 @@ func TestServerResponseWithApplicationResultFail(t *testing.T) {
 	assert.Nil(t, err)
 	s.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	assert.Len(t, l.errors, 1)
 	got := l.errors[0]
 	assert.NotNil(t, got)
 	assert.Equal(t, want, got)
